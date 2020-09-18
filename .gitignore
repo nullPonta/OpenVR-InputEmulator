@@ -3,3 +3,8 @@
 /build/*
 /Release/*
 /Debug/*
+
+/.vs/*
+/client_overlay/x64/*
+/driver_vrinputemulator/bin/*
+
