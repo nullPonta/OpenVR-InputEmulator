@@ -2,6 +2,7 @@
 
 #include <map>
 #include <mutex>
+//#include <openvr.h>
 #include <openvr_driver.h>
 #include <vrinputemulator_types.h>
 #include "utils/DevicePropertyValueVisitor.h"
@@ -22,7 +23,7 @@ class ServerDriver;
 *
 * Represents a single virtual device managed by this driver. It has a serial number, a device type, device properties, a pose and components.
 **/
-class VirtualDeviceDriver : public vr::ITrackedDeviceServerDriver, public vr::IVRControllerComponent {
+class VirtualDeviceDriver : public vr::ITrackedDeviceServerDriver, public vr::IVRDriverInput {
 protected:
 	std::recursive_mutex _mutex;
 
@@ -55,8 +56,19 @@ public:
 
 	// from IVRControllerComponent
 
-	virtual vr::VRControllerState_t GetControllerState() override;
-	virtual bool TriggerHapticPulse(uint32_t unAxisId, uint16_t usPulseDurationMicroseconds) override;
+	//virtual vr::VRControllerState_t GetControllerState() override;
+	//virtual bool TriggerHapticPulse(uint32_t unAxisId, uint16_t usPulseDurationMicroseconds) override;
+	virtual vr::VRControllerState_t GetControllerState();
+	virtual bool TriggerHapticPulse(uint32_t unAxisId, uint16_t usPulseDurationMicroseconds);
+
+	// from IVRDriverInput
+	virtual vr::EVRInputError CreateBooleanComponent(vr::PropertyContainerHandle_t ulContainer, const char* pchName, vr::VRInputComponentHandle_t* pHandle) override;
+	virtual vr::EVRInputError UpdateBooleanComponent(vr::VRInputComponentHandle_t ulComponent, bool bNewValue, double fTimeOffset) override;
+	virtual vr::EVRInputError CreateScalarComponent(vr::PropertyContainerHandle_t ulContainer, const char* pchName, vr::VRInputComponentHandle_t* pHandle, vr::EVRScalarType eType, vr::EVRScalarUnits eUnits) override;
+	virtual vr::EVRInputError UpdateScalarComponent(vr::VRInputComponentHandle_t ulComponent, float fNewValue, double fTimeOffset) override;
+	virtual vr::EVRInputError CreateHapticComponent(vr::PropertyContainerHandle_t ulContainer, const char* pchName, vr::VRInputComponentHandle_t* pHandle) override;
+	virtual vr::EVRInputError CreateSkeletonComponent(vr::PropertyContainerHandle_t ulContainer, const char* pchName, const char* pchSkeletonPath, const char* pchBasePosePath, vr::EVRSkeletalTrackingLevel eSkeletalTrackingLevel, const vr::VRBoneTransform_t* pGripLimitTransforms, uint32_t unGripLimitTransformCount, vr::VRInputComponentHandle_t* pHandle) override;
+	virtual vr::EVRInputError UpdateSkeletonComponent(vr::VRInputComponentHandle_t ulComponent, vr::EVRSkeletalMotionRange eMotionRange, const vr::VRBoneTransform_t* pTransforms, uint32_t unTransformCount) override;
 
 	// from self
 

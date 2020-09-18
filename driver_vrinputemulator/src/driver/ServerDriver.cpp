@@ -131,7 +131,7 @@ void ServerDriver::hooksTrackedDeviceAdded(void* serverDriverHost, int version, 
 	handle->setServerDriverHooks(InterfaceHooks::hookInterface(pDriver, "ITrackedDeviceServerDriver_005"));
 
 	// Hook into controller component interface if available
-	auto controllerComponent = (vr::IVRControllerComponent*)((vr::ITrackedDeviceServerDriver*)pDriver)->GetComponent(vr::IVRControllerComponent_Version);
+	auto controllerComponent = (vr::IVRDriverInput*)((vr::ITrackedDeviceServerDriver*)pDriver)->GetComponent(vr::IVRDriverInput_Version);
 	if (controllerComponent) {
 		handle->setControllerComponentHooks(InterfaceHooks::hookInterface(controllerComponent, "IVRControllerComponent_001"));
 		_ptrToDeviceManipulationHandleMap[controllerComponent] = handle.get();
@@ -466,7 +466,8 @@ void ServerDriver::openvr_poseUpdate(uint32_t unWhichDevice, vr::DriverPose_t & 
 }
 
 void ServerDriver::openvr_proximityEvent(uint32_t unWhichDevice, bool bProximitySensorTriggered) {
-	vr::VRServerDriverHost()->ProximitySensorState(unWhichDevice, bProximitySensorTriggered);
+	//TODO : ‰¼‘Î‰ž
+	//vr::VRServerDriverHost()->ProximitySensorState(unWhichDevice, bProximitySensorTriggered);
 }
 
 void ServerDriver::openvr_vendorSpecificEvent(uint32_t unWhichDevice, vr::EVREventType eventType, vr::VREvent_Data_t & eventData, double eventTimeOffset) {

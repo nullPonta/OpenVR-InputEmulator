@@ -231,7 +231,7 @@ void IpcShmCommunicator::_ipcThreadFunc(IpcShmCommunicator* _this, ServerDriver 
 									if (!d) {
 										resp.status = ipc::ReplyStatus::NotFound;
 									} else {
-										auto c = (vr::IVRControllerComponent*)d->GetComponent(vr::IVRControllerComponent_Version);
+										auto c = (VirtualDeviceDriver*)d->GetComponent(vr::IVRDriverInput_Version);
 										if (c) {
 											resp.msg.vd_GetControllerState.controllerState = c->GetControllerState();
 											resp.status = ipc::ReplyStatus::Ok;
@@ -486,7 +486,7 @@ void IpcShmCommunicator::_ipcThreadFunc(IpcShmCommunicator* _this, ServerDriver 
 									}
 								}
 								if (resp.status != ipc::ReplyStatus::Ok) {
-									LOG(ERROR) << "Error while updating device button mapping: Error code " << (int)resp.status;
+									LOG(ERROR) << "[DeviceManipulation_GetDeviceInfo] Error while updating device button mapping: Error code " << (int)resp.status;
 								}
 								if (resp.messageId != 0) {
 									_this->sendReply(message.msg.vd_GenericDeviceIdMessage.clientId, resp);
@@ -610,7 +610,7 @@ void IpcShmCommunicator::_ipcThreadFunc(IpcShmCommunicator* _this, ServerDriver 
 									}
 								}
 								if (resp.status != ipc::ReplyStatus::Ok) {
-									LOG(ERROR) << "Error while updating device button mapping: Error code " << (int)resp.status;
+									LOG(ERROR) << "[DeviceManipulation_GetDeviceOffsets] Error while updating device button mapping: Error code " << (int)resp.status;
 								}
 								if (resp.messageId != 0) {
 									_this->sendReply(message.msg.vd_GenericDeviceIdMessage.clientId, resp);

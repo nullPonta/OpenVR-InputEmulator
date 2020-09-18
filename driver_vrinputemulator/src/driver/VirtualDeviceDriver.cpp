@@ -45,8 +45,8 @@ void * VirtualDeviceDriver::GetComponent(const char * pchComponentNameAndVersion
 	LOG(TRACE) << "VirtualDeviceDriver[" << m_serialNumber << "]::GetComponent( " << pchComponentNameAndVersion << " )";
 	if (std::strcmp(pchComponentNameAndVersion, vr::ITrackedDeviceServerDriver_Version) == 0) {
 		return static_cast<vr::ITrackedDeviceServerDriver*>(this);
-	} else if (std::strcmp(pchComponentNameAndVersion, vr::IVRControllerComponent_Version) == 0) {
-		return static_cast<vr::IVRControllerComponent*>(this);
+	} else if (std::strcmp(pchComponentNameAndVersion, vr::IVRDriverInput_Version) == 0) {
+		return static_cast<vr::IVRDriverInput*>(this);
 	}
 	return nullptr;
 }
@@ -103,38 +103,111 @@ bool VirtualDeviceDriver::TriggerHapticPulse(uint32_t unAxisId, uint16_t usPulse
 	return true; // returning false will cause errors to come out of vrserver
 }
 
+
+vr::EVRInputError CreateBooleanComponent(
+		vr::PropertyContainerHandle_t ulContainer,
+		const char* pchName,
+		vr::VRInputComponentHandle_t* pHandle) {
+
+	return vr::VRInputError_None;
+}
+
+vr::EVRInputError UpdateBooleanComponent(
+		vr::VRInputComponentHandle_t ulComponent,
+		bool bNewValue,
+		double fTimeOffset) {
+
+	return vr::VRInputError_None;
+}
+
+vr::EVRInputError CreateScalarComponent(
+		vr::PropertyContainerHandle_t ulContainer,
+		const char* pchName,
+		vr::VRInputComponentHandle_t* pHandle,
+		vr::EVRScalarType eType, vr::EVRScalarUnits eUnits) {
+
+	return vr::VRInputError_None;
+}
+
+vr::EVRInputError UpdateScalarComponent(
+		vr::VRInputComponentHandle_t ulComponent,
+		float fNewValue,
+		double fTimeOffset) {
+
+	return vr::VRInputError_None;
+}
+
+vr::EVRInputError CreateHapticComponent(
+		vr::PropertyContainerHandle_t ulContainer,
+		const char* pchName,
+		vr::VRInputComponentHandle_t* pHandle) {
+
+	return vr::VRInputError_None;
+}
+
+vr::EVRInputError CreateSkeletonComponent(
+		vr::PropertyContainerHandle_t ulContainer,
+		const char* pchName,
+		const char* pchSkeletonPath,
+		const char* pchBasePosePath,
+		vr::EVRSkeletalTrackingLevel eSkeletalTrackingLevel,
+		const vr::VRBoneTransform_t* pGripLimitTransforms,
+		uint32_t unGripLimitTransformCount,
+		vr::VRInputComponentHandle_t* pHandle) {
+
+	return vr::VRInputError_None;
+}
+
+vr::EVRInputError UpdateSkeletonComponent(
+		vr::VRInputComponentHandle_t ulComponent,
+		vr::EVRSkeletalMotionRange eMotionRange,
+		const vr::VRBoneTransform_t* pTransforms,
+		uint32_t unTransformCount) {
+
+	return vr::VRInputError_None;
+}
+
+
 void VirtualDeviceDriver::updateControllerState(const vr::VRControllerState_t & newState, double offset, bool notify) {
 	LOG(TRACE) << "VirtualDeviceDriver[" << m_serialNumber << "]::updateControllerState()";
 	std::lock_guard<std::recursive_mutex> lock(_mutex);
 	if (notify && m_openvrId != vr::k_unTrackedDeviceIndexInvalid) {
 		auto oldState = m_ControllerState;
 		m_ControllerState = newState;
+
+		vr::DriverPose_t m_Pose; //TODO : ‰¼‘Î‰ž
+
 		// Iterate over buttons and check for state changes
 		for (unsigned i = 0; i < vr::k_EButton_Max; ++i) {
 			auto oldTouchedState = oldState.ulButtonTouched & vr::ButtonMaskFromId((vr::EVRButtonId)i);
 			auto newTouchedState = newState.ulButtonTouched & vr::ButtonMaskFromId((vr::EVRButtonId)i);
 			if (!oldTouchedState && newTouchedState) {
 				LOG(DEBUG) << m_serialNumber << ": ButtonTouch detected: " << i;
-				vr::VRServerDriverHost()->TrackedDeviceButtonTouched(m_openvrId, (vr::EVRButtonId)i, offset);
+				//vr::VRServerDriverHost()->TrackedDeviceButtonTouched(m_openvrId, (vr::EVRButtonId)i, offset);
+				vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_openvrId, m_Pose, sizeof(vr::DriverPose_t));
 			} else if (oldTouchedState && !newTouchedState) {
 				LOG(DEBUG) << m_serialNumber << ": ButtonUntouch detected: " << i;
-				vr::VRServerDriverHost()->TrackedDeviceButtonUntouched(m_openvrId, (vr::EVRButtonId)i, offset);
+				//vr::VRServerDriverHost()->TrackedDeviceButtonUntouched(m_openvrId, (vr::EVRButtonId)i, offset);
+				vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_openvrId, m_Pose, sizeof(vr::DriverPose_t));
 			}
 			auto oldPressedState = oldState.ulButtonPressed & vr::ButtonMaskFromId((vr::EVRButtonId)i);
 			auto newPressedState = newState.ulButtonPressed & vr::ButtonMaskFromId((vr::EVRButtonId)i);
 			if (!oldPressedState && newPressedState) {
 				LOG(DEBUG) << m_serialNumber << ": ButtonPress detected: " << i;
-				vr::VRServerDriverHost()->TrackedDeviceButtonPressed(m_openvrId, (vr::EVRButtonId)i, offset);
+				//vr::VRServerDriverHost()->TrackedDeviceButtonPressed(m_openvrId, (vr::EVRButtonId)i, offset);
+				vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_openvrId, m_Pose, sizeof(vr::DriverPose_t));
 			} else if (oldPressedState && !newPressedState) {
 				LOG(DEBUG) << m_serialNumber << ": ButtonUnpress detected: " << i;
-				vr::VRServerDriverHost()->TrackedDeviceButtonUnpressed(m_openvrId, (vr::EVRButtonId)i, offset);
+				//vr::VRServerDriverHost()->TrackedDeviceButtonUnpressed(m_openvrId, (vr::EVRButtonId)i, offset);
+				vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_openvrId, m_Pose, sizeof(vr::DriverPose_t));
 			}
 		}
 		// Iterate over axis and check for state changes
 		for (unsigned i = 0; i < vr::k_unControllerStateAxisCount; ++i) {
 			if (oldState.rAxis[i].x != newState.rAxis[i].x || oldState.rAxis[i].y != newState.rAxis[i].y) {
 				LOG(DEBUG) << m_serialNumber << ": AxisChange detected: " << i;
-				vr::VRServerDriverHost()->TrackedDeviceAxisUpdated(m_openvrId, i, newState.rAxis[i]);
+				//vr::VRServerDriverHost()->TrackedDeviceAxisUpdated(m_openvrId, i, newState.rAxis[i]);
+				vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_openvrId, m_Pose, sizeof(vr::DriverPose_t));
 			}
 		}
 	} else {
@@ -144,29 +217,36 @@ void VirtualDeviceDriver::updateControllerState(const vr::VRControllerState_t & 
 
 void VirtualDeviceDriver::buttonEvent(ButtonEventType eventType, uint32_t buttonId, double timeOffset, bool notify) {
 	LOG(TRACE) << "VirtualDeviceDriver[" << m_serialNumber << "]::buttonEvent( " << (int)eventType << ", " << buttonId << ", " << timeOffset << " )";
+
+	vr::DriverPose_t m_Pose; //TODO : ‰¼‘Î‰ž
+
 	switch (eventType) {
 	case ButtonEventType::ButtonPressed:
 		m_ControllerState.ulButtonPressed |= vr::ButtonMaskFromId((vr::EVRButtonId)buttonId);
 		if (notify && m_openvrId != vr::k_unTrackedDeviceIndexInvalid) {
-			vr::VRServerDriverHost()->TrackedDeviceButtonPressed(m_openvrId, (vr::EVRButtonId)buttonId, timeOffset);
+			//vr::VRServerDriverHost()->TrackedDeviceButtonPressed(m_openvrId, (vr::EVRButtonId)buttonId, timeOffset);
+			vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_openvrId, m_Pose, sizeof(vr::DriverPose_t));
 		}
 		break;
 	case ButtonEventType::ButtonUnpressed:
 		m_ControllerState.ulButtonPressed &= ~vr::ButtonMaskFromId((vr::EVRButtonId)buttonId);
 		if (notify && m_openvrId != vr::k_unTrackedDeviceIndexInvalid) {
-			vr::VRServerDriverHost()->TrackedDeviceButtonUnpressed(m_openvrId, (vr::EVRButtonId)buttonId, timeOffset);
+			//vr::VRServerDriverHost()->TrackedDeviceButtonUnpressed(m_openvrId, (vr::EVRButtonId)buttonId, timeOffset);
+			vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_openvrId, m_Pose, sizeof(vr::DriverPose_t));
 		}
 		break;
 	case ButtonEventType::ButtonTouched:
 		m_ControllerState.ulButtonTouched |= vr::ButtonMaskFromId((vr::EVRButtonId)buttonId);
 		if (notify && m_openvrId != vr::k_unTrackedDeviceIndexInvalid) {
-			vr::VRServerDriverHost()->TrackedDeviceButtonTouched(m_openvrId, (vr::EVRButtonId)buttonId, timeOffset);
+			//vr::VRServerDriverHost()->TrackedDeviceButtonTouched(m_openvrId, (vr::EVRButtonId)buttonId, timeOffset);
+			vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_openvrId, m_Pose, sizeof(vr::DriverPose_t));
 		}
 		break;
 	case ButtonEventType::ButtonUntouched:
 		m_ControllerState.ulButtonTouched &= ~vr::ButtonMaskFromId((vr::EVRButtonId)buttonId);
 		if (notify && m_openvrId != vr::k_unTrackedDeviceIndexInvalid) {
-			vr::VRServerDriverHost()->TrackedDeviceButtonUntouched(m_openvrId, (vr::EVRButtonId)buttonId, timeOffset);
+			//vr::VRServerDriverHost()->TrackedDeviceButtonUntouched(m_openvrId, (vr::EVRButtonId)buttonId, timeOffset);
+			vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_openvrId, m_Pose, sizeof(vr::DriverPose_t));
 		}
 		break;
 	default:
@@ -178,8 +258,11 @@ void VirtualDeviceDriver::axisEvent(uint32_t axisId, const vr::VRControllerAxis_
 	LOG(TRACE) << "VirtualDeviceDriver[" << m_serialNumber << "]::axisEvent( " << axisId << " )";
 	if (axisId < vr::k_unControllerStateAxisCount) {
 		m_ControllerState.rAxis[axisId] = axisState;
+		vr::DriverPose_t m_Pose; //TODO : ‰¼‘Î‰ž
+
 		if (notify && m_openvrId != vr::k_unTrackedDeviceIndexInvalid) {
-			vr::VRServerDriverHost()->TrackedDeviceAxisUpdated(m_openvrId, axisId, m_ControllerState.rAxis[axisId]);
+			//vr::VRServerDriverHost()->TrackedDeviceAxisUpdated(m_openvrId, axisId, m_ControllerState.rAxis[axisId]);
+			vr::VRServerDriverHost()->TrackedDevicePoseUpdated(m_openvrId, m_Pose, sizeof(vr::DriverPose_t));
 		}
 	}
 }
