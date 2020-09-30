@@ -377,3 +377,4 @@ NOTE: Adjust the path the `msvc2015_64` folder in Qt to match your installation
 # License
 
 This software is released under GPL 3.0.
+
